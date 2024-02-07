@@ -6,18 +6,15 @@ TARGET=${1:-parent}
 
 function restore {
   echo "Restoring original pages structure..."
-  if [ -d ".temp" ]; then
-    # 退避させたchild以外のpagesディレクトリを復元
-    rm -rf pages
-    mv .temp/pages pages
-    # childディレクトリ内のファイルを復元
+  if [ -d ".temp/pages" ]; then
+    # 移動したchildの内容を退避させた元の場所に戻す
     if [ -d "pages/child" ]; then
-      # 元々のchildディレクトリが存在する場合は、一度削除
-      rm -rf pages/child
+      # childディレクトリを一時的に別の場所に移動
+      mv pages/child .temp/pages/child
     fi
-    # 退避させたchildディレクトリを復元
-    mv pages/* .temp/pages/child/
+    # 退避させたディレクトリを削除
     rm -rf pages
+    # 元のpagesディレクトリを復元
     mv .temp/pages pages
     # 一時フォルダを削除
     rmdir .temp
@@ -28,13 +25,15 @@ trap restore EXIT
 
 if [ "$TARGET" = "child" ]; then
   echo "Setting up environment for child development..."
-  # pagesディレクトリを一時的に退避
+  # 全てのpagesディレクトリを一時的に退避
   mkdir -p .temp
-  mv pages .temp
-  # 新しいpagesディレクトリを作成し、childの内容を移動
+  mv pages .temp/
+  # childディレクトリ内の内容を新しいpagesディレクトリに移動
   mkdir -p pages
   mv .temp/pages/child/* pages/
+  # .temp/pages/childに残る隠しファイルも移動（存在する場合）
+  mv .temp/pages/child/.* pages/ 2> /dev/null || true
 fi
 
 # 開発サーバー起動
-yarn dev
+nuxt dev
