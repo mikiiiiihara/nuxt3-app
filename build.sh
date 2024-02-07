@@ -14,7 +14,7 @@ if [ "$TARGET" = "child" ]; then
   mv pages_temp/child pages
 
   # ビルド実行
-  yarn build
+  yarn generate
 
   # ビルド後、元の状態に復元
   mv pages pages_temp/child
