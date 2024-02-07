@@ -6,15 +6,20 @@ TARGET=${1:-parent}
 
 function restore {
   echo "Restoring original pages structure..."
-  if [ -d ".temp/pages" ]; then
-    # 退避させたpagesディレクトリを削除
+  if [ -d ".temp" ]; then
+    # 退避させたchild以外のpagesディレクトリを復元
     rm -rf pages
-    # 元のpagesディレクトリを復元
     mv .temp/pages pages
-    # childディレクトリをpages下に戻す
-    if [ -d ".temp/child" ]; then
-      mv .temp/child pages/child
+    # childディレクトリ内のファイルを復元
+    if [ -d "pages/child" ]; then
+      # 元々のchildディレクトリが存在する場合は、一度削除
+      rm -rf pages/child
     fi
+    # 退避させたchildディレクトリを復元
+    mv pages/* .temp/pages/child/
+    rm -rf pages
+    mv .temp/pages pages
+    # 一時フォルダを削除
     rmdir .temp
   fi
 }
@@ -27,12 +32,8 @@ if [ "$TARGET" = "child" ]; then
   mkdir -p .temp
   mv pages .temp
   # 新しいpagesディレクトリを作成し、childの内容を移動
-  mkdir pages
+  mkdir -p pages
   mv .temp/pages/child/* pages/
-  # childディレクトリ内のサブディレクトリも移動（存在する場合）
-  if [ -d ".temp/pages/child" ]; then
-    mv .temp/pages/child/.temp/child pages/
-  fi
 fi
 
 # 開発サーバー起動
